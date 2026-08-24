@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Редактировать вид карты{% endblock %}
+{% block page_title %}Справочник: Виды карт - Редактирование{% endblock %}
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <strong><i class="bi bi-pencil"></i> Редактировать вид карты</strong>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('ref_card_types_edit', item_id=item.id) }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Вид карты</label>
+                <input type="text" name="name" class="form-control" value="{{ item.name }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Наименование для печати</label>
+                <input type="text" name="print_name" class="form-control" value="{{ item.print_name or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Наименование для отчета</label>
+                <input type="text" name="report_name" class="form-control" value="{{ item.get('report_name', '') or '' }}">
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Сохранить</button>
+                <a href="{{ url_for('ref_card_types') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i> Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Отчеты{% endblock %}
+{% block page_title %}Отчеты{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5><i class="bi bi-calendar-day text-primary"></i> Карты за день</h5>
+                <p class="text-muted">Сводная информация о статусах карт на конец указанного дня</p>
+                <a href="{{ url_for('report_cards_as_of') }}" class="btn btn-outline-primary">Открыть</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5><i class="bi bi-calendar-range text-success"></i> Отчет за период</h5>
+                <p class="text-muted">Данные из документов печати, выдачи и передачи в МФЦ</p>
+                <a href="{{ url_for('report_period') }}" class="btn btn-outline-success">Открыть</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5><i class="bi bi-file-earmark-text text-info"></i> Отчет для ЭДО</h5>
+                <p class="text-muted">Документы печати и брака за период для электронного документооборота</p>
+                <a href="{{ url_for('report_edo') }}" class="btn btn-outline-info">Открыть</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5><i class="bi bi-file-earmark-spreadsheet text-warning"></i> Сводный отчет по картам</h5>
+                <p class="text-muted">Сводный отчет из документов печати и брака</p>
+                <a href="{{ url_for('report_summary') }}" class="btn btn-outline-warning">Открыть</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

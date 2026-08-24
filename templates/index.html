@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Главная - Учет транспортных карт{% endblock %}
+{% block page_title %}Главная{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-credit-card display-4 text-primary"></i>
+                <h5 class="card-title mt-3">Справочники</h5>
+                <p class="card-text text-muted">Управление картами, видами карт, владельцами, заявителями, организациями и МФЦ</p>
+                <a href="{{ url_for('ref_cards') }}" class="btn btn-outline-primary">Открыть справочники</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-journal-text display-4 text-success"></i>
+                <h5 class="card-title mt-3">Документы</h5>
+                <p class="card-text text-muted">Прием, печать, выдача, брак, передача и возврат карт</p>
+                <a href="{{ url_for('docs_journal') }}" class="btn btn-outline-success">Открыть документы</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-4 text-info"></i>
+                <h5 class="card-title mt-3">Отчеты</h5>
+                <p class="card-text text-muted">Отчеты по картам, сводные отчеты, отчеты для ЦБ</p>
+                <a href="{{ url_for('reports') }}" class="btn btn-outline-info">Открыть отчеты</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="m-0"><i class="bi bi-lightning"></i> Быстрые действия</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if not is_issue_user %}
+                    <a href="{{ url_for('doc_create', doc_type='receipt') }}" class="btn btn-outline-secondary text-start">
+                        <i class="bi bi-plus-circle"></i> Прием карт
+                    </a>
+                    <a href="{{ url_for('doc_create', doc_type='print') }}" class="btn btn-outline-secondary text-start">
+                        <i class="bi bi-printer"></i> Печать карт
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('doc_create', doc_type='issue') }}" class="btn btn-outline-secondary text-start">
+                        <i class="bi bi-box-arrow-up"></i> Выдача карт
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="m-0"><i class="bi bi-info-circle"></i> Информация</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Система учета транспортных карт</p>
+                <ul class="list-unstyled text-muted small">
+                    <li><i class="bi bi-check-circle text-success"></i> Учет приема, печати и выдачи карт</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Контроль статусов карт</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Журналирование действий</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Ролевая модель доступа</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

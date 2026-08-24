@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Справочник: Карты{% endblock %}
+{% block page_title %}Справочник: Карты{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <strong><i class="bi bi-plus-circle"></i> Добавить карту вручную</strong>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('ref_cards') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Номер карты (19 цифр)</label>
+                <input type="text" name="card_number" class="form-control" pattern="\d{19}" maxlength="19" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Вид карты</label>
+                <select name="card_type_id" class="form-select" required>
+                    <option value="">-- выберите --</option>
+                    {% for ct_id, ct in card_types.items() %}
+                    <option value="{{ ct_id }}">{{ ct.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Статус</label>
+                <select name="status" class="form-select">
+                    <option value="">-- не указан --</option>
+                    <option value="ready_to_print">Готова к печати</option>
+                    <option value="ready_to_issue">Готова к выдаче</option>
+                    <option value="issued">Выдана</option>
+                    <option value="defect">Брак</option>
+                    <option value="transferred_region">Передана в другой регион</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <input type="text" class="form-control form-control-sm" id="searchNumber" placeholder="Поиск по номеру" value="{{ search_number }}" style="width:200px;">
+            <select class="form-select form-select-sm" id="searchType" style="width:180px;">
+                <option value="">Все виды</option>
+                {% for ct_id, ct in card_types.items() %}
+                <option value="{{ ct_id }}" {% if search_type == ct_id %}selected{% endif %}>{{ ct.name }}</option>
+                {% endfor %}
+            </select>
+            <select class="form-select form-select-sm" id="sortBy" style="width:150px;">
+                <option value="">Сортировка</option>
+                <option value="card_number" {% if sort_by == 'card_number' %}selected{% endif %}>По номеру</option>
+                <option value="status" {% if sort_by == 'status' %}selected{% endif %}>По статусу</option>
+                <option value="card_type_id" {% if sort_by == 'card_type_id' %}selected{% endif %}>По виду</option>
+            </select>
+            <button class="btn btn-sm btn-primary" onclick="applyFilters()">
+                <i class="bi bi-search"></i> Применить
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                <i class="bi bi-x-circle"></i> Сбросить
+            </button>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('download_template', ref_name='cards') }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-download"></i> Шаблон Excel
+            </a>
+            <a href="{{ url_for('ref_export_excel', ref_name='cards') }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-file-earmark-excel"></i> Сохранить в Excel
+            </a>
+            <form method="POST" action="{{ url_for('ref_import_excel', ref_name='cards') }}" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                <input type="file" name="excel_file" accept=".xlsx" class="form-control form-control-sm" style="width:220px;" required>
+                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Загрузить</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Номер карты</th>
+                        <th>Вид карты</th>
+                        <th>Статус</th>
+                        <th>ФИО владельца</th>
+                        <th>ФИО заявителя</th>
+                        <th style="width:60px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for card in cards %}
+                    <tr>
+                        <td><code>{{ card.card_number }}</code></td>
+                        <td>{{ card_types.get(card.card_type_id, {}).name if card.card_type_id else 'Не указан' }}</td>
+                        <td>
+                            {% set st = card.status %}
+                            <span class="status-badge status-{{ st }}">
+                                {{ card_statuses.get(st, st) if st else 'Не указан' }}
+                            </span>
+                        </td>
+                        <td>{{ owners.get(card.owner_id, {}).full_name if card.owner_id else '' }}</td>
+                        <td>{{ applicants.get(card.applicant_id, {}).full_name if card.applicant_id else '' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('ref_cards_delete', card_id=card.id) }}" onsubmit="return confirm('Удалить карту?');">
+                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Нет данных</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function applyFilters() {
+    const params = new URLSearchParams();
+    const num = document.getElementById('searchNumber').value;
+    const typ = document.getElementById('searchType').value;
+    const sort = document.getElementById('sortBy').value;
+    if (num) params.set('search_number', num);
+    if (typ) params.set('search_type', typ);
+    if (sort) params.set('sort_by', sort);
+    window.location.href = '{{ url_for("ref_cards") }}?' + params.toString();
+}
+function clearFilters() {
+    window.location.href = '{{ url_for("ref_cards") }}';
+}
+document.getElementById('searchNumber').addEventListener('keypress', e => {
+    if (e.key === 'Enter') applyFilters();
+});
+</script>
+{% endblock %}

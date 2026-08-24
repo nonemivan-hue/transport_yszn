@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}Создание: {{ doc_type_name }}{% endblock %}
+{% block page_title %}Создание: {{ doc_type_name }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="card mb-3 bg-light">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('doc_upload_excel', doc_type=doc_type) }}" enctype="multipart/form-data" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="bi bi-file-earmark-excel"></i> Загрузить из Excel</label>
+                        <input type="file" name="excel_file" accept=".xlsx,.xls" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-upload"></i> Загрузить</button>
+                    </div>
+                    <div class="col-md-5 text-end">
+                        <a href="{{ url_for('download_doc_template', doc_type=doc_type) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-download"></i> Скачать образец
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <form method="POST" id="docForm">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Номер документа</label>
+                    <input type="text" name="doc_number" class="form-control" placeholder="Будет присвоен автоматически">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата документа</label>
+                    <input type="date" name="doc_date" class="form-control" value="{{ current_date }}">
+                </div>
+                {% if doc_type in ['receipt', 'transfer_region'] %}
+                <div class="col-md-3">
+                    <label class="form-label">Организация</label>
+                    <select name="organization_id" class="form-select">
+                        <option value="">-- выберите --</option>
+                        {% for org in organizations %}
+                        <option value="{{ org.id }}">{{ org.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                {% if doc_type in ['transfer_mfc', 'return_mfc'] %}
+                <div class="col-md-3">
+                    <label class="form-label">МФЦ</label>
+                    <select name="mfc_id" class="form-select">
+                        <option value="">-- выберите --</option>
+                        {% for m in mfcs %}
+                        <option value="{{ m.id }}">{{ m.code }} - {{ m.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Сотрудник</label>
+                    <select name="employee_id" class="form-select">
+                        <option value="">-- выберите --</option>
+                        {% for e in employees %}
+                        <option value="{{ e.id }}">{{ e.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            <h6 class="mt-4">Табличная часть</h6>
+            <div class="table-responsive">
+                <table class="table table-bordered doc-lines-table" id="linesTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">№ п/п</th>
+                            <th>Номер карты</th>
+                            {% if doc_type != 'transfer_region' %}
+                            <th>Вид карты</th>
+                            {% endif %}
+                            {% if doc_type in ['print', 'issue', 'transfer_mfc', 'return_mfc'] %}
+                            <th>ФИО владельца</th>
+                            {% endif %}
+                            {% if doc_type in ['issue', 'transfer_mfc', 'return_mfc'] %}
+                            <th>ФИО заявителя</th>
+                            {% endif %}
+                            <th style="width:50px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="linesBody">
+                        <tr data-idx="1">
+                            <td>1</td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" name="line_1_card_number" class="form-control" required onblur="onCardNumberBlur(this)">
+                                    {% if doc_type != 'receipt' %}
+                                    <button type="button" class="btn btn-outline-secondary" onclick="pickCard(1)">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            {% if doc_type == 'transfer_region' %}
+                            <input type="hidden" name="line_1_card_type_id" value="">
+                            {% elif doc_type == 'receipt' %}
+                            <td>
+                                <select name="line_1_card_type_id" class="form-select form-select-sm" required>
+                                    <option value="">-- выберите --</option>
+                                    {% for ct in card_types %}
+                                    <option value="{{ ct.id }}">{{ ct.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            {% else %}
+                            <td>
+                                <input type="hidden" name="line_1_card_type_id" value="">
+                                <input type="text" class="form-control card-type-display" readonly placeholder="Подберите карту">
+                            </td>
+                            {% endif %}
+                            {% if doc_type in ['print', 'issue', 'transfer_mfc', 'return_mfc'] %}
+                            <td><input type="text" name="line_1_owner_name" class="form-control" {% if doc_type != 'print' %}readonly{% endif %}></td>
+                            {% endif %}
+                            {% if doc_type in ['issue', 'transfer_mfc', 'return_mfc'] %}
+                            <td><input type="text" name="line_1_applicant_name" class="form-control"></td>
+                            {% endif %}
+                            <td><button type="button" class="btn btn-sm btn-danger" onclick="removeLine(this)"><i class="bi bi-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLine()">
+                <i class="bi bi-plus-lg"></i> Добавить строку
+            </button>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save"></i> Записать
+                </button>
+                <a href="{{ url_for('docs_journal') }}" class="btn btn-outline-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="cardPickModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подбор карты</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="pickSearch" class="form-control mb-2" placeholder="Поиск по номеру..." oninput="loadPickCards()">
+                {% if doc_type in ['issue', 'transfer_mfc'] %}
+                <input type="text" id="pickOwnerSearch" class="form-control mb-2" placeholder="Поиск по ФИО владельца..." oninput="loadPickCards()">
+                {% endif %}
+                <div class="table-responsive pick-modal">
+                    <table class="table table-hover table-sm">
+                        <thead><tr><th>Номер</th><th>Вид</th>{% if doc_type in ['issue', 'transfer_mfc'] %}<th>Владелец</th>{% endif %}<th>Статус</th><th></th></tr></thead>
+                        <tbody id="pickCardsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lineCount = 1;
+let currentPickLine = 1;
+const docType = '{{ doc_type }}';
+const cardTypes = {{ card_types | tojson }};
+
+function addLine() {
+    lineCount++;
+    const tbody = document.getElementById('linesBody');
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-idx', lineCount);
+    let html = `<td>${lineCount}</td>`;
+    html += `<td><div class="input-group"><input type="text" name="line_${lineCount}_card_number" class="form-control" required onblur="onCardNumberBlur(this)">`;
+    if (docType !== 'receipt') {
+        html += `<button type="button" class="btn btn-outline-secondary" onclick="pickCard(${lineCount})"><i class="bi bi-search"></i></button>`;
+    }
+    html += `</div></td>`;
+
+    if (docType === 'transfer_region') {
+        html += `<input type="hidden" name="line_${lineCount}_card_type_id" value="">`;
+    } else if (docType === 'receipt') {
+        let opts = '<option value="">-- выберите --</option>';
+        cardTypes.forEach(ct => { opts += `<option value="${ct.id}">${ct.name}</option>`; });
+        html += `<td><select name="line_${lineCount}_card_type_id" class="form-select form-select-sm" required>${opts}</select></td>`;
+    } else {
+        html += `<td><input type="hidden" name="line_${lineCount}_card_type_id" value=""><input type="text" class="form-control card-type-display" readonly placeholder="Подберите карту"></td>`;
+    }
+
+    if (['print','issue','transfer_mfc','return_mfc'].includes(docType)) {
+        const ro = docType !== 'print' ? 'readonly' : '';
+        html += `<td><input type="text" name="line_${lineCount}_owner_name" class="form-control" ${ro}></td>`;
+    }
+    if (['issue','transfer_mfc','return_mfc'].includes(docType)) {
+        html += `<td><input type="text" name="line_${lineCount}_applicant_name" class="form-control"></td>`;
+    }
+    html += `<td><button type="button" class="btn btn-sm btn-danger" onclick="removeLine(this)"><i class="bi bi-trash"></i></button></td>`;
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+}
+
+function removeLine(btn) {
+    const row = btn.closest('tr');
+    if (document.querySelectorAll('#linesBody tr').length > 1) row.remove();
+    reindexLines();
+}
+
+function reindexLines() {
+    const rows = document.querySelectorAll('#linesBody tr');
+    rows.forEach((row, idx) => {
+        const num = idx + 1;
+        row.setAttribute('data-idx', num);
+        row.cells[0].textContent = num;
+        row.querySelectorAll('input, button').forEach(el => {
+            if (el.name) el.name = el.name.replace(/line_\d+_/, `line_${num}_`);
+            if (el.getAttribute('onclick') && el.getAttribute('onclick').includes('pickCard')) {
+                el.setAttribute('onclick', `pickCard(${num})`);
+            }
+        });
+    });
+    lineCount = rows.length;
+}
+
+function pickCard(lineIdx) {
+    currentPickLine = lineIdx;
+    const modal = new bootstrap.Modal(document.getElementById('cardPickModal'));
+    loadPickCards();
+    modal.show();
+}
+
+function loadPickCards() {
+    const q = document.getElementById('pickSearch').value;
+    const showOwnerCol = ['issue', 'transfer_mfc'].includes(docType);
+    let url = '/api/cards?q=' + encodeURIComponent(q);
+    if (docType === 'print') url += '&status=ready_to_print';
+    if (docType === 'issue') url += '&status=ready_to_issue';
+    if (docType === 'transfer_mfc') url += '&status=ready_to_issue';
+    if (docType === 'return_mfc') url += '&status=issued';
+    if (docType === 'defect') url += '&status=ready_to_print';
+    if (docType === 'transfer_region') url += '&status=ready_to_print';
+    if (showOwnerCol) {
+        const ownerInput = document.getElementById('pickOwnerSearch');
+        if (ownerInput && ownerInput.value.trim()) url += '&owner=' + encodeURIComponent(ownerInput.value.trim());
+    }
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('pickCardsBody');
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${c.card_number}</td><td>${c.card_type_name}</td>${showOwnerCol ? `<td>${c.owner_name || ''}</td>` : ''}<td><span class="status-badge status-${c.status}">${c.status_name}</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="selectCard('${c.card_number}','${c.card_type_id}','${c.card_type_name}','${(c.owner_name || '').replace(/'/g, "\\'")}')">Выбрать</button></td>`;
+                tbody.appendChild(tr);
+            });
+        });
+}
+
+function selectCard(number, ctId, ctName, ownerName) {
+    const row = document.querySelector(`tr[data-idx="${currentPickLine}"]`);
+    row.querySelector(`[name="line_${currentPickLine}_card_number"]`).value = number;
+    const ctHidden = row.querySelector(`[name="line_${currentPickLine}_card_type_id"]`);
+    if (ctHidden) ctHidden.value = ctId;
+    const ctDisplay = row.querySelector('.card-type-display');
+    if (ctDisplay) ctDisplay.value = ctName;
+    const ownerInput = row.querySelector(`[name="line_${currentPickLine}_owner_name"]`);
+    if (ownerInput && docType !== 'print') ownerInput.value = ownerName;
+    bootstrap.Modal.getInstance(document.getElementById('cardPickModal')).hide();
+}
+
+function onCardNumberBlur(input) {
+    const number = input.value.trim();
+    if (!number || number.length !== 19) return;
+    const row = input.closest('tr');
+    const idx = row.getAttribute('data-idx');
+    fetch('/api/card/' + encodeURIComponent(number))
+        .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+        .then(data => {
+            const ctHidden = row.querySelector(`[name="line_${idx}_card_type_id"]`);
+            if (ctHidden) ctHidden.value = data.card_type_id || '';
+            const ctDisplay = row.querySelector('.card-type-display');
+            if (ctDisplay) ctDisplay.value = data.card_type_name || '';
+            const ownerInput = row.querySelector(`[name="line_${idx}_owner_name"]`);
+            if (ownerInput && docType !== 'print') ownerInput.value = data.owner_name || '';
+        })
+        .catch(() => {
+            // card not found, clear fields
+            const ctHidden = row.querySelector(`[name="line_${idx}_card_type_id"]`);
+            if (ctHidden) ctHidden.value = '';
+            const ctDisplay = row.querySelector('.card-type-display');
+            if (ctDisplay) ctDisplay.value = '';
+        });
+}
+
+// Attach blur handler to existing card number inputs
+document.querySelectorAll('input[name^="line_"][name$="_card_number"]').forEach(input => {
+    input.addEventListener('blur', () => onCardNumberBlur(input));
+});
+</script>
+{% endblock %}

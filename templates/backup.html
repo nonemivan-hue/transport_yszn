@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Резервное копирование{% endblock %}
+{% block page_title %}Резервное копирование{% endblock %}
+{% block content %}
+
+<div class="card mb-4">
+    <div class="card-header bg-white">
+        <h6 class="m-0"><i class="bi bi-clock-history text-primary"></i> Настройка ежедневного резервного копирования</h6>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-3">Настройте автоматическое создание резервных копий каждый день в указанное время.</p>
+        <form method="POST" action="{{ url_for('backup_index') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Время создания копии</label>
+                <input type="time" name="backup_schedule_time" class="form-control" value="{{ schedule_time }}" required>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mt-8">
+                    <input type="checkbox" name="backup_enabled" class="form-check-input" id="backup_enabled" {% if backup_enabled %}checked{% endif %}>
+                    <label class="form-check-label" for="backup_enabled">Включить авто-резервное копирование</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" name="backup_schedule" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Сохранить настройки
+                </button>
+            </div>
+        </form>
+        <div class="alert alert-info mt-3 mb-0 small">
+            <i class="bi bi-info-circle"></i> Для работы автоматического резервного копирования необходимо настроить запуск скрипта <code>backup_daily.sh</code> через планировщик задач (cron).
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h6 class="m-0"><i class="bi bi-plus-circle text-success"></i> Создать резервную копию</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Создание архива со всеми данными системы (папка <code>data/</code>).</p>
+                <p class="text-muted small">В архив включаются все справочники, документы, журналы и настройки.</p>
+                <form method="POST" action="{{ url_for('backup_create') }}">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-cloud-arrow-up"></i> Создать резервную копию
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h6 class="m-0"><i class="bi bi-cloud-arrow-down text-primary"></i> Загрузить резервную копию</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Загрузите ранее созданный архив <code>.zip</code> для восстановления данных.</p>
+                <form method="POST" action="{{ url_for('backup_index') }}" enctype="multipart/form-data" class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <input type="file" name="backup_file" accept=".zip" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-upload"></i> Загрузить и восстановить
+                        </button>
+                    </div>
+                </form>
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>Внимание:</strong> при восстановлении текущие данные будут заменены. Перед восстановлением будет создана аварийная копия.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="m-0"><i class="bi bi-archive"></i> Список резервных копий</h6>
+        <span class="badge bg-secondary">{{ backups | length }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Имя файла</th>
+                        <th>Дата создания</th>
+                        <th>Размер</th>
+                        <th style="width:220px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in backups %}
+                    <tr>
+                        <td><code>{{ b.name }}</code></td>
+                        <td>{{ b.date }}</td>
+                        <td>{{ b.size }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('backup_download', name=b.name) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i> Скачать
+                            </a>
+                            <form method="POST" action="{{ url_for('backup_restore', name=b.name) }}" class="d-inline" onsubmit="return confirm('Восстановить данные из этой копии? Текущие данные будут заменены.');">
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Восстановить
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('backup_delete', name=b.name) }}" class="d-inline" onsubmit="return confirm('Удалить резервную копию?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox display-6"></i>
+                            <p class="mt-2">Резервные копии отсутствуют</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

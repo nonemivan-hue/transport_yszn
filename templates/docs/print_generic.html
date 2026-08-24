@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ doc_type_name }} {{ doc.doc_number }}</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 14px; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { text-transform: uppercase; margin-bottom: 5px; }
+        .header p { margin: 2px 0; }
+        .info { margin-bottom: 20px; }
+        .info p { margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()">Печать</button>
+        <button onclick="window.close()">Закрыть</button>
+    </div>
+
+    <div class="header">
+        <h2>{{ doc_type_name }}</h2>
+        <p>№ {{ doc.doc_number }} от {{ doc.doc_date }}</p>
+    </div>
+
+    <div class="info">
+        {% if org %}<p><strong>Организация:</strong> {{ org.name }}</p>{% endif %}
+        {% if mfc %}<p><strong>МФЦ:</strong> {{ mfc.code }} - {{ mfc.name }}</p>{% endif %}
+        {% if employee %}<p><strong>Сотрудник:</strong> {{ employee.full_name }}</p>{% endif %}
+        {% if author %}<p><strong>Автор:</strong> {{ author.full_name }}</p>{% endif %}
+        <p><strong>Статус:</strong> {% if doc.status == 'posted' %}Проведен{% else %}Черновик{% endif %}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50px">№ п/п</th>
+                <th>Номер карты</th>
+                <th>Вид карты</th>
+                {% if doc.doc_type in ['print', 'issue', 'transfer_mfc', 'return_mfc'] %}
+                <th>ФИО владельца</th>
+                {% endif %}
+                {% if doc.doc_type in ['issue', 'transfer_mfc', 'return_mfc'] %}
+                <th>ФИО заявителя</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>{{ line.line_no }}</td>
+                <td>{{ line.card_number }}</td>
+                <td>{{ line.card_type_name }}</td>
+                {% if doc.doc_type in ['print', 'issue', 'transfer_mfc', 'return_mfc'] %}
+                <td>{{ line.owner_name }}</td>
+                {% endif %}
+                {% if doc.doc_type in ['issue', 'transfer_mfc', 'return_mfc'] %}
+                <td>{{ line.applicant_name or line.owner_name }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

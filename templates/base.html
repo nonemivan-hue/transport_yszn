@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Учет транспортных карт{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #2c5282;
+            --secondary-color: #4a5568;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: all 0.2s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            margin-right: 8px;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+        .navbar-top {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 20px;
+            margin: -20px -20px 20px -20px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .table th {
+            background: #e9ecef;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .status-ready_to_print { background: #fff3cd; color: #856404; }
+        .status-ready_to_issue { background: #d1ecf1; color: #0c5460; }
+        .status-issued { background: #d4edda; color: #155724; }
+        .status-defect { background: #f8d7da; color: #721c24; }
+        .status-transferred_region { background: #e2e3e5; color: #383d41; }
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        .doc-lines-table input, .doc-lines-table select {
+            font-size: 0.875rem;
+        }
+        .pick-modal .modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="sidebar d-flex flex-column">
+        <div class="logo">
+            <i class="bi bi-credit-card-2-front"></i> Транспортные карты
+        </div>
+        <nav class="nav flex-column mt-2">
+            <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                <i class="bi bi-house-door"></i> Главная
+            </a>
+
+            <div class="mt-3 px-3 text-uppercase" style="font-size:0.7rem;opacity:0.6;">Справочники</div>
+            <a class="nav-link {% if request.endpoint == 'ref_cards' %}active{% endif %}" href="{{ url_for('ref_cards') }}">
+                <i class="bi bi-credit-card"></i> Карты
+            </a>
+            <a class="nav-link {% if request.endpoint == 'ref_card_types' %}active{% endif %}" href="{{ url_for('ref_card_types') }}">
+                <i class="bi bi-tags"></i> Виды карт
+            </a>
+            <a class="nav-link {% if request.endpoint == 'ref_owners' %}active{% endif %}" href="{{ url_for('ref_owners') }}">
+                <i class="bi bi-person"></i> ФИО владельцев
+            </a>
+            <a class="nav-link {% if request.endpoint == 'ref_applicants' %}active{% endif %}" href="{{ url_for('ref_applicants') }}">
+                <i class="bi bi-people"></i> ФИО заявителей
+            </a>
+            <a class="nav-link {% if request.endpoint == 'ref_organizations' %}active{% endif %}" href="{{ url_for('ref_organizations') }}">
+                <i class="bi bi-building"></i> Организации
+            </a>
+            <a class="nav-link {% if request.endpoint == 'ref_mfcs' %}active{% endif %}" href="{{ url_for('ref_mfcs') }}">
+                <i class="bi bi-shop"></i> МФЦ
+            </a>
+
+            <div class="mt-3 px-3 text-uppercase" style="font-size:0.7rem;opacity:0.6;">Документы</div>
+            <a class="nav-link {% if request.endpoint == 'docs_journal' %}active{% endif %}" href="{{ url_for('docs_journal') }}">
+                <i class="bi bi-journal-text"></i> Журнал документов
+            </a>
+
+            {% if not is_issue_user %}
+            <div class="mt-3 px-3 text-uppercase" style="font-size:0.7rem;opacity:0.6;">Отчеты</div>
+            <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+                <i class="bi bi-graph-up"></i> Все отчеты
+            </a>
+            {% endif %}
+
+            {% if is_admin %}
+            <div class="mt-3 px-3 text-uppercase" style="font-size:0.7rem;opacity:0.6;">Администрирование</div>
+            <a class="nav-link {% if request.endpoint == 'ref_employees' %}active{% endif %}" href="{{ url_for('ref_employees') }}">
+                <i class="bi bi-person-gear"></i> Сотрудники
+            </a>
+            <a class="nav-link {% if request.endpoint == 'constants' %}active{% endif %}" href="{{ url_for('constants') }}">
+                <i class="bi bi-gear"></i> Константы
+            </a>
+            <a class="nav-link {% if request.endpoint == 'action_log' %}active{% endif %}" href="{{ url_for('action_log') }}">
+                <i class="bi bi-clock-history"></i> Журнал действий
+            </a>
+            <a class="nav-link {% if request.endpoint == 'backup_index' %}active{% endif %}" href="{{ url_for('backup_index') }}">
+                <i class="bi bi-cloud-arrow-up"></i> Резервное копирование
+            </a>
+            {% endif %}
+        </nav>
+        <div class="mt-auto p-3 border-top border-secondary">
+            <small class="d-block opacity-75">{{ current_user.full_name if current_user else '' }}</small>
+            <a href="{{ url_for('change_password') }}" class="text-white opacity-75 d-block mb-1"><i class="bi bi-key"></i> Сменить пароль</a>
+            <a href="{{ url_for('logout') }}" class="text-white opacity-75"><i class="bi bi-box-arrow-right"></i> Выход</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="navbar-top d-flex justify-content-between align-items-center">
+            <h5 class="m-0">{% block page_title %}Главная{% endblock %}</h5>
+            <div>
+                <span class="text-muted">{{ current_user.full_name if current_user else '' }}</span>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-dismiss flash messages
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

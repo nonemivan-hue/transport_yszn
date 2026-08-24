@@ -1,0 +1,14 @@
+[
+  {
+    "key": "",
+    "value": ""
+  },
+  {
+    "key": "backup_schedule_time",
+    "value": "20:00"
+  },
+  {
+    "key": "backup_enabled",
+    "value": "true"
+  }
+]

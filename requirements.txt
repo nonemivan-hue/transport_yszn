@@ -1,0 +1,14 @@
+Flask==3.0.0
+Werkzeug==3.0.1
+openpyxl==3.1.2
+python-docx==1.1.0
+
+# PostgreSQL support (optional)
+psycopg2-binary==2.9.9
+
+# MySQL support (optional)
+PyMySQL==1.1.0
+cryptography==42.0.0
+
+# Environment variables support
+python-dotenv==1.0.0

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}МФЦ{% endblock %}
+{% block page_title %}Справочник: МФЦ{% endblock %}
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <strong><i class="bi bi-plus-circle"></i> Добавить МФЦ</strong>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('ref_mfcs') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Код</label>
+                <input type="text" name="code" class="form-control" required>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Наименование</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Добавить</button>
+                <a href="{{ url_for('download_template', ref_name='mfcs') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download"></i> Шаблон Excel
+                </a>
+                <a href="{{ url_for('ref_export_excel', ref_name='mfcs') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-file-earmark-excel"></i> Сохранить в Excel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <form method="POST" action="{{ url_for('ref_import_excel', ref_name='mfcs') }}" enctype="multipart/form-data" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-0"><small>Загрузить из Excel</small></label>
+                <input type="file" name="excel_file" accept=".xlsx" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Загрузить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">Список МФЦ</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Код</th><th>Наименование</th><th style="width:120px"></th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.name }}</td>
+                    <td class="d-flex gap-1">
+                        <a href="{{ url_for('ref_mfcs_edit', item_id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('ref_mfcs_delete', item_id=item.id) }}" onsubmit="return confirm('Удалить?');">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center text-muted py-4">Нет данных</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

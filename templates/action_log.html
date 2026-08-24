@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Журнал действий{% endblock %}
+{% block page_title %}Журнал действий{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white">История действий пользователей</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Детали</th></tr></thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp[:19] if log.timestamp else '' }}</td>
+                        <td>{{ employees.get(log.user_id, {}).full_name if log.user_id else 'Система' }}</td>
+                        <td><code>{{ log.action }}</code></td>
+                        <td>{{ log.details }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">Нет записей</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

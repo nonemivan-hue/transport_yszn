@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Реестр внесения в комплекс {{ doc.doc_number }}</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 14px; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { text-transform: uppercase; margin-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        .date-line { margin-bottom: 20px; }
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()">Печать</button>
+        <button onclick="window.close()">Закрыть</button>
+    </div>
+
+    <div class="header">
+        <h2>Реестр внесения в комплекс</h2>
+    </div>
+
+    <div class="date-line">
+        <p><strong>Дата:</strong> {{ doc.doc_date }}</p>
+        <p><strong>МФЦ:</strong> {{ mfc.name if mfc else '' }} ({{ mfc.code if mfc else '' }})</p>
+        {% if author %}<p><strong>Автор:</strong> {{ author.full_name }}</p>{% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50px">№ п/п</th>
+                <th>ФИО заявителя</th>
+                <th>ФИО владельца</th>
+                <th>Вид карты</th>
+                <th>Номер карты</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>{{ line.line_no }}</td>
+                <td>{{ line.applicant_name or line.owner_name }}</td>
+                <td>{{ line.owner_name }}</td>
+                <td>{{ line.card_type_name }}</td>
+                <td>{{ line.card_number }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

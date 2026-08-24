@@ -1,0 +1,151 @@
+[
+  {
+    "full_name": "Трощенко Иван Александрович",
+    "login": "Админ",
+    "password": "3831043",
+    "roles": [
+      "user",
+      "admin"
+    ],
+    "permissions": {},
+    "id": "af61323e-78e0-45ff-9f97-552d4f880da7",
+    "created_at": "2026-08-12T09:50:57.376099"
+  },
+  {
+    "full_name": "Харлампиди Е.С.",
+    "login": "Харлампиди",
+    "password": "12345",
+    "roles": [
+      "user"
+    ],
+    "permissions": {},
+    "id": "3b5223bf-c70c-47c9-960a-ac40ac91e7a9",
+    "created_at": "2026-08-12T09:51:35.768792"
+  },
+  {
+    "full_name": "Маркарова Т.А.",
+    "login": "Маркарова",
+    "password": "12345",
+    "roles": [
+      "user"
+    ],
+    "permissions": {},
+    "id": "e5876379-6f03-4add-9608-1e026401fd97",
+    "created_at": "2026-08-16T00:37:48.151904"
+  },
+  {
+    "full_name": "Костенко И.В.",
+    "login": "Костенко",
+    "password": "12345",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "c3324cc6-ed73-425e-89de-e665c815f099",
+    "created_at": "2026-08-17T09:05:17.331760"
+  },
+  {
+    "full_name": "Фролова И.В.",
+    "login": "Фролова",
+    "password": "12345",
+    "roles": [
+      "user",
+      "issue"
+    ],
+    "permissions": {},
+    "id": "f179e90d-7988-4976-a6ed-32999c98c8d0",
+    "created_at": "2026-08-17T09:11:43.177213"
+  },
+  {
+    "full_name": "Василенко Н.В.",
+    "login": "Василенко",
+    "password": "007",
+    "roles": [
+      "user",
+      "issue"
+    ],
+    "permissions": {},
+    "id": "7eff3d69-5f25-4984-9bb8-345010f1f0e2",
+    "created_at": "2026-08-17T09:13:05.872145",
+    "updated_at": "2026-08-17T09:18:42.068256"
+  },
+  {
+    "full_name": "Ивлева Н.А.",
+    "login": "Ивлева",
+    "password": "12345",
+    "roles": [
+      "user",
+      "issue"
+    ],
+    "permissions": {},
+    "id": "1707d18a-eb98-4a19-be34-d587f7a50520",
+    "created_at": "2026-08-17T10:47:38.981083"
+  },
+  {
+    "full_name": "Барбалюк О.С.",
+    "login": "Барбалюк",
+    "password": "Silentas23",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "7be5e829-9c85-4cfc-b35f-492d23cef8cc",
+    "created_at": "2026-08-17T18:14:30.584581",
+    "updated_at": "2026-08-20T09:57:22.085660"
+  },
+  {
+    "full_name": "Волотко К.В.",
+    "login": "Волотко",
+    "password": "12345",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "89ef56d2-9bcd-4675-814e-2d0fb9ba8111",
+    "created_at": "2026-08-17T18:15:00.345136"
+  },
+  {
+    "full_name": "Тарасюк Е.А.",
+    "login": "Тарасюк",
+    "password": "12345",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "9d487354-efa3-43d0-9dc6-7c948b9cb182",
+    "created_at": "2026-08-17T18:15:45.169131"
+  },
+  {
+    "full_name": "Тыртычная В.А.",
+    "login": "Тыртычная",
+    "password": "12345",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "f2efc63e-ebbb-47f6-a74e-9a73903c2464",
+    "created_at": "2026-08-17T18:16:12.364737"
+  },
+  {
+    "full_name": "Фролова И.В.",
+    "login": "Фролова",
+    "password": "12345",
+    "roles": [
+      "user"
+    ],
+    "permissions": {},
+    "id": "fbdc0383-943d-4ffb-a56b-aa9d96471638",
+    "created_at": "2026-08-17T18:16:36.339293"
+  },
+  {
+    "full_name": "Шубина С.В.",
+    "login": "Шубина",
+    "password": "12345",
+    "roles": [
+      "issue"
+    ],
+    "permissions": {},
+    "id": "d0d28447-4d87-4b71-8687-2a062fced883",
+    "created_at": "2026-08-17T18:17:03.582464"
+  }
+]

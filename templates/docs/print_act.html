@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Акт приема-передачи {{ doc.doc_number }}</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 14px; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { text-transform: uppercase; margin-bottom: 5px; }
+        .header p { margin: 2px 0; }
+        .org-info { margin-bottom: 20px; }
+        .org-info p { margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        .signatures { margin-top: 40px; display: flex; justify-content: space-between; }
+        .signature-block { width: 45%; }
+        .signature-line { border-top: 1px solid black; margin-top: 30px; padding-top: 5px; }
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()">Печать</button>
+        <button onclick="window.close()">Закрыть</button>
+    </div>
+
+    <div class="header">
+        <h2>Акт приема-передачи</h2>
+        <p>№ {{ doc.doc_number }} от {{ doc.doc_date }}</p>
+    </div>
+
+    <div class="org-info">
+        <p><strong>Передающая организация:</strong> {{ our_org }}</p>
+        <p><strong>Принимающая организация:</strong> {{ mfc.name if mfc else '' }} ({{ mfc.code if mfc else '' }})</p>
+        <p><strong>Сотрудник, подготовивший документ:</strong> {{ employee.full_name if employee else '' }}</p>
+        {% if author %}<p><strong>Автор:</strong> {{ author.full_name }}</p>{% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50px">№ п/п</th>
+                <th>ФИО заявителя</th>
+                <th>Прилагаемые документы</th>
+                <th>ФИО владельца карты</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>{{ line.line_no }}</td>
+                <td>{{ line.applicant_name or line.owner_name }}</td>
+                <td>Уведомление о принятом решении о выдаче {{ line.card_type_print_name }} ({{ line.card_number }})</td>
+                <td>{{ line.owner_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div class="signature-block">
+            <p><strong>Передал:</strong></p>
+            <div class="signature-line">{{ employee.full_name if employee else '_________________' }}</div>
+            <p style="font-size: 12px; color: #666;">(подпись, ФИО)</p>
+        </div>
+        <div class="signature-block">
+            <p><strong>Принял:</strong></p>
+            <div class="signature-line">_________________</div>
+            <p style="font-size: 12px; color: #666;">(подпись, ФИО)</p>
+        </div>
+    </div>
+</body>
+</html>

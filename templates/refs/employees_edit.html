@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Редактировать сотрудника{% endblock %}
+{% block page_title %}Справочник: Сотрудники - Редактирование{% endblock %}
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <strong><i class="bi bi-pencil"></i> Редактировать сотрудника</strong>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('ref_employees_edit', item_id=item.id) }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">ФИО</label>
+                <input type="text" name="full_name" class="form-control" value="{{ item.full_name }}" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Логин</label>
+                <input type="text" name="login" class="form-control" value="{{ item.login }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Роли</label>
+                <select name="roles" class="form-select" multiple size="1">
+                    <option value="user" {% if 'user' in item.roles %}selected{% endif %}>Пользователь</option>
+                    <option value="issue" {% if 'issue' in item.roles %}selected{% endif %}>Выдача</option>
+                    <option value="admin" {% if 'admin' in item.roles %}selected{% endif %}>Администратор</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Сохранить</button>
+                <a href="{{ url_for('ref_employees') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i> Отмена</a>
+            </div>
+        </form>
+        <div class="alert alert-info mt-3">
+            <small><i class="bi bi-info-circle"></i> Для изменения пароля используйте кнопку смены пароля в списке сотрудников.</small>
+        </div>
+    </div>
+</div>
+{% endblock %}

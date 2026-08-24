@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Остаток карт{% endblock %}
+{% block page_title %}Остаток карт{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Остаток карт по видам</h5>
+            <a href="{{ url_for('export_stock') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-excel"></i> Сохранить в Excel
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Вид карт</th>
+                        <th class="text-center">Готова к печати</th>
+                        <th class="text-center">Готова к выдачи</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report %}
+                    <tr>
+                        <td>{{ row.card_type_name }}</td>
+                        <td class="text-center">{{ row.ready_to_print }}</td>
+                        <td class="text-center">{{ row.ready_to_issue }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="table-secondary fw-bold">
+                        <td>Итого</td>
+                        <td class="text-center">{{ total_print }}</td>
+                        <td class="text-center">{{ total_issue }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

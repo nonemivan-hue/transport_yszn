@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Отчет за период{% endblock %}
+{% block page_title %}Отчет за период{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="POST" class="row g-3 align-items-end mb-4">
+            <div class="col-md-3">
+                <label class="form-label">Начало периода</label>
+                <input type="date" name="start_date" class="form-control" value="{{ start_date }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Конец периода</label>
+                <input type="date" name="end_date" class="form-control" value="{{ end_date }}" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Сформировать</button>
+            </div>
+        </form>
+
+        {% if report %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead><tr><th>Вид карты</th><th>Статус</th><th>Количество</th></tr></thead>
+                <tbody>
+                    {% for row in report %}
+                    <tr><td>{{ row.card_type_name }}</td><td>{{ row.status }}</td><td>{{ row.count }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

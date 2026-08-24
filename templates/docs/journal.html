@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Журнал документов{% endblock %}
+{% block page_title %}Журнал документов{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between flex-wrap gap-2">
+        {% if not is_issue_user %}
+        <div class="btn-group">
+            <a href="{{ url_for('docs_journal') }}" class="btn btn-sm btn-outline-secondary {% if not doc_type %}active{% endif %}">Все</a>
+            <a href="?type=receipt" class="btn btn-sm btn-outline-secondary {% if doc_type=='receipt' %}active{% endif %}">Прием</a>
+            <a href="?type=print" class="btn btn-sm btn-outline-secondary {% if doc_type=='print' %}active{% endif %}">Печать</a>
+            <a href="?type=issue" class="btn btn-sm btn-outline-secondary {% if doc_type=='issue' %}active{% endif %}">Выдача</a>
+            <a href="?type=defect" class="btn btn-sm btn-outline-secondary {% if doc_type=='defect' %}active{% endif %}">Брак</a>
+            <a href="?type=transfer_mfc" class="btn btn-sm btn-outline-secondary {% if doc_type=='transfer_mfc' %}active{% endif %}">В МФЦ</a>
+            <a href="?type=return_mfc" class="btn btn-sm btn-outline-secondary {% if doc_type=='return_mfc' %}active{% endif %}">Из МФЦ</a>
+            <a href="?type=transfer_region" class="btn btn-sm btn-outline-secondary {% if doc_type=='transfer_region' %}active{% endif %}">В регион</a>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-plus-lg"></i> Создать
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='receipt') }}">Прием карт</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='print') }}">Печать карт</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='issue') }}">Выдача карт</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='defect') }}">Брак</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='transfer_mfc') }}">Передача в МФЦ</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='return_mfc') }}">Возврат из МФЦ</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('doc_create', doc_type='transfer_region') }}">Передача в другой регион</a></li>
+            </ul>
+        </div>
+        {% else %}
+        <div></div>
+        <a href="{{ url_for('doc_create', doc_type='issue') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg"></i> Создать выдачу
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>№</th><th>Дата</th><th>Тип</th><th>Статус</th><th>Автор</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.doc_number }}</td>
+                    <td>{{ item.doc_date }}</td>
+                    <td>{{ document_types.get(item.doc_type, item.doc_type) }}</td>
+                    <td>
+                        {% if item.status == 'posted' %}
+                        <span class="badge bg-success">Проведен</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Черновик</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ emp_map.get(item.created_by, {}).full_name if item.created_by else '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('doc_edit', doc_id=item.id) }}" class="btn btn-sm btn-outline-primary">Открыть</a>
+                        {% if item.doc_type == 'transfer_mfc' %}
+                        <a href="{{ url_for('doc_print_form', doc_id=item.id, form_type='transfer') }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-printer"></i> Печать
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Нет документов</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
