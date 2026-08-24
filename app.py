@@ -1339,9 +1339,9 @@ def export_summary():
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Сводный"
-    ws.append(["Вид карты", "Номера карт"])
+    ws.append(["Вид карты", "Наименование для отчета", "Номера карт"])
     for row in report:
-        ws.append([row.get("card_type_name", ""), ", ".join(row.get("numbers", []))])
+        ws.append([row.get("card_type_name", ""), row.get("print_name", ""), ", ".join(row.get("numbers", []))])
     output = BytesIO()
     wb.save(output)
     output.seek(0)
