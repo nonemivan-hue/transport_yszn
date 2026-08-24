@@ -571,3 +571,60 @@ def get_cards_as_of_report(as_of_date=None):
         report.append(result[ct_id])
     
     return report
+
+
+def get_actualization_report():
+    """
+    Report: Актуализация карт.
+    Rows = card types, columns = statuses, cells = count.
+    Includes totals by card type (row totals) and by status (column totals).
+    Uses report_name from card_types.
+    """
+    cards = load_all("cards")
+    card_types = get_card_types()
+    
+    # Initialize matrix: {ct_id: {status: count}}
+    result = {}
+    for ct in card_types:
+        ct_id = ct["id"]
+        result[ct_id] = {"card_type_name": ct.get("report_name", "") or ct.get("name", "Не указан")}
+        for status in REPORT_STATUSES:
+            result[ct_id][status] = 0
+    
+    # Count cards
+    for card in cards:
+        ct_id = card.get("card_type_id", "")
+        status = card.get("status", "")
+        if ct_id in result and status in REPORT_STATUSES:
+            result[ct_id][status] += 1
+    
+    # Calculate row totals (by card type)
+    for ct_id in result:
+        result[ct_id]["total"] = sum(result[ct_id].get(status, 0) for status in REPORT_STATUSES)
+    
+    # Calculate column totals (by status)
+    status_totals = {status: 0 for status in REPORT_STATUSES}
+    grand_total = 0
+    for ct_id in result:
+        for status in REPORT_STATUSES:
+            count = result[ct_id].get(status, 0)
+            status_totals[status] += count
+            grand_total += count
+    
+    # Build report list with totals info
+    report = []
+    for ct_id in sorted(result.keys(), key=lambda k: result[k]["card_type_name"]):
+        report.append(result[ct_id])
+    
+    # Add status totals as a special row
+    totals_row = {
+        "card_type_name": "Итого",
+        "is_totals_row": True
+    }
+    for status in REPORT_STATUSES:
+        totals_row[status] = status_totals[status]
+    totals_row["total"] = grand_total
+    
+    report.append(totals_row)
+    
+    return report

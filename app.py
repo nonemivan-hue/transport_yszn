@@ -28,7 +28,7 @@ from app.models import (
     get_mfcs, get_mfc_by_id,
     get_employees, get_employee_by_id, get_employee_by_login, check_permission,
     get_documents, get_document_by_id, post_document, delete_document,
-    get_cards_report_as_of, get_period_report, get_period_report_detail, get_edo_report, get_summary_report, get_stock_report, get_cards_as_of_report,
+    get_cards_report_as_of, get_period_report, get_period_report_detail, get_edo_report, get_summary_report, get_stock_report, get_cards_as_of_report, get_actualization_report,
     CARD_STATUSES, DOCUMENT_TYPES, REPORT_STATUSES, log_action, now_iso
 )
 
@@ -1219,6 +1219,14 @@ def report_cards_as_of_new():
     return render_template("reports/cards_as_of.html", report=report, statuses=REPORT_STATUSES)
 
 
+@app.route("/reports/actualization")
+@login_required
+def report_actualization():
+    """Report: Актуализация карт."""
+    report = get_actualization_report()
+    return render_template("reports/actualization.html", report=report, statuses=REPORT_STATUSES)
+
+
 # ============== REPORTS EXPORT TO EXCEL ==============
 def _export_report_to_excel(report_data, columns, sheet_title="Отчет"):
     try:
@@ -1368,6 +1376,46 @@ def export_stock():
     wb.save(output)
     output.seek(0)
     return send_file(output, download_name="stock_report.xlsx", as_attachment=True)
+
+
+@app.route("/reports/export/actualization")
+@login_required
+def export_actualization():
+    report = get_actualization_report()
+    try:
+        import openpyxl
+    except ImportError:
+        flash("openpyxl не установлен", "danger")
+        return redirect(url_for("report_actualization"))
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Актуализация карт"
+    
+    # Build header row with statuses
+    header = ["Вид карт"] + [CARD_STATUSES.get(s, s) for s in REPORT_STATUSES] + ["Итого"]
+    ws.append(header)
+    
+    # Data rows
+    for row in report:
+        if row.get("is_totals_row"):
+            continue  # Skip totals row, we'll add it at the end
+        ws.append([
+            row.get("card_type_name", "")
+        ] + [row.get(s, 0) for s in REPORT_STATUSES] + [row.get("total", 0)])
+    
+    # Totals row at the end
+    totals_row = ["Итого"]
+    for row in report:
+        if row.get("is_totals_row"):
+            totals_row.extend([row.get(s, 0) for s in REPORT_STATUSES])
+            totals_row.append(row.get("total", 0))
+            break
+    ws.append(totals_row)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, download_name="actualization_report.xlsx", as_attachment=True)
 
 
 # ============== ACTION LOG ==============
