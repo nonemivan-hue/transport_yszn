@@ -35,6 +35,9 @@ from app.models import (
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "transport_cards_secret_key_change_in_production"
 
+# Store active sessions: user_id -> last activity timestamp
+active_sessions = {}
+
 # Document number prefixes by type
 DOC_PREFIXES = {
     "receipt": "ПР",
@@ -100,6 +103,13 @@ def inject_globals():
     user = None
     if "user_id" in session:
         user = get_employee_by_id(session["user_id"])
+        # Update active session timestamp
+        from datetime import datetime
+        active_sessions[session["user_id"]] = {
+            "full_name": user.get("full_name", ""),
+            "login": user.get("login", ""),
+            "last_activity": datetime.now().isoformat()
+        }
     return {
         "card_statuses": CARD_STATUSES,
         "document_types": DOCUMENT_TYPES,
@@ -138,6 +148,9 @@ def login():
 def logout():
     if "user_id" in session:
         log_action(session["user_id"], "LOGOUT", "User logged out")
+        # Remove from active sessions
+        if session["user_id"] in active_sessions:
+            del active_sessions[session["user_id"]]
     session.clear()
     flash("Вы вышли из системы", "info")
     return redirect(url_for("login"))
@@ -1423,9 +1436,37 @@ def export_actualization():
 @login_required
 @admin_required
 def admin_employee_stats():
-    """Statistics: which employees work in the system."""
-    employees = get_employees()
-    return render_template("admin/employee_stats.html", employees=employees)
+    """Statistics: which employees are currently working in the system."""
+    from datetime import datetime, timedelta
+    
+    # Clean up old sessions (older than 30 minutes)
+    now = datetime.now()
+    active_user_ids = set()
+    for user_id, info in list(active_sessions.items()):
+        try:
+            last_activity = datetime.fromisoformat(info["last_activity"])
+            if now - last_activity > timedelta(minutes=30):
+                del active_sessions[user_id]
+            else:
+                active_user_ids.add(user_id)
+        except:
+            del active_sessions[user_id]
+    
+    # Get all employees and mark active ones
+    all_employees = get_employees()
+    active_employees = []
+    for emp in all_employees:
+        if emp["id"] in active_user_ids:
+            emp_info = active_sessions.get(emp["id"], {})
+            emp_with_status = dict(emp)
+            emp_with_status["is_active"] = True
+            emp_with_status["last_activity"] = emp_info.get("last_activity", "")
+            active_employees.append(emp_with_status)
+    
+    return render_template("admin/employee_stats.html", 
+                           employees=active_employees, 
+                           total_employees=len(all_employees),
+                           active_count=len(active_employees))
 
 
 # ============== ACTION LOG ==============
