@@ -1418,6 +1418,16 @@ def export_actualization():
     return send_file(output, download_name="actualization_report.xlsx", as_attachment=True)
 
 
+# ============== ADMIN: EMPLOYEE STATISTICS ==============
+@app.route("/admin/employee_stats")
+@login_required
+@admin_required
+def admin_employee_stats():
+    """Statistics: which employees work in the system."""
+    employees = get_employees()
+    return render_template("admin/employee_stats.html", employees=employees)
+
+
 # ============== ACTION LOG ==============
 @app.route("/action_log")
 @login_required

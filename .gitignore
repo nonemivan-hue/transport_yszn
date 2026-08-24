@@ -1,10 +1,1 @@
-```
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Directories
-app/__pycache__/
-```
+Nothing should be ignored in this case, as the changes only include source files (.html, .py) without any build artifacts, dependencies, or temporary files.
